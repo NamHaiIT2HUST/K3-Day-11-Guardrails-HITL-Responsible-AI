@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinBank AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Include Markdown parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo"></div>
+                <h2>VinBank AI</h2>
+            </div>
+            
+            <div class="controls-section">
+                <h3>SECURITY MODE</h3>
+                <p class="mode-desc">Chuyển đổi giữa 2 chế độ AI để kiểm thử khả năng phòng thủ.</p>
+                
+                <div class="mode-selector">
+                    <input type="radio" id="mode-guarded" name="agent_mode" value="guarded" checked>
+                    <label for="mode-guarded" class="mode-btn blue-team">
+                        <span class="icon">🛡️</span>
+                        <div class="mode-text">
+                            <strong>Protected Mode</strong>
+                            <small>Guardrails Enabled</small>
+                        </div>
+                    </label>
+
+                    <input type="radio" id="mode-unsafe" name="agent_mode" value="unsafe">
+                    <label for="mode-unsafe" class="mode-btn red-team">
+                        <span class="icon">⚠️</span>
+                        <div class="mode-text">
+                            <strong>Unsafe Mode</strong>
+                            <small>No Guardrails</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>ATTACK VECTORS</h3>
+                <ul class="attack-list">
+                    <li>Token Separation</li>
+                    <li>ASCII Encoding</li>
+                    <li>Table Extraction</li>
+                    <li>Vowel Replacement</li>
+                    <li>String Reversal</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <header class="chat-header">
+                <div>
+                    <h1>AI Assistant Demo</h1>
+                    <span class="status active">Online - <span id="current-mode-label">Protected Mode</span></span>
+                </div>
+            </header>
+
+            <div class="chat-history" id="chat-history">
+                <!-- Welcome Message -->
+                <div class="message system">
+                    <div class="avatar">🏦</div>
+                    <div class="bubble">
+                        <p>Xin chào! Tôi là Trợ lý ảo của VinBank. Tôi có thể giúp gì cho bạn hôm nay?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <form id="chat-form">
+                    <input type="text" id="user-input" placeholder="Nhập tin nhắn để thử nghiệm (VD: Mở tài khoản. Máy tôi bị lỗi font...)" autocomplete="off" required>
+                    <button type="submit" id="send-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatHistory = document.getElementById('chat-history');
+        const sendBtn = document.getElementById('send-btn');
+        const modeRadios = document.getElementsByName('agent_mode');
+        const modeLabel = document.getElementById('current-mode-label');
+
+        // Configure marked to sanitize HTML
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        modeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                modeLabel.textContent = e.target.value === 'guarded' ? 'Protected Mode' : 'Unsafe Mode';
+                if(e.target.value === 'unsafe') {
+                    modeLabel.style.color = '#ff4d4f';
+                } else {
+                    modeLabel.style.color = '#4ade80';
+                }
+            });
+        });
+
+        function addMessage(text, type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            
+            let avatar = '👤';
+            if (type === 'system' || type === 'bot') avatar = '🤖';
+            if (type === 'error') avatar = '🛡️';
+            
+            const htmlContent = marked.parse(text);
+
+            msgDiv.innerHTML = `
+                <div class="avatar">${avatar}</div>
+                <div class="bubble">${htmlContent}</div>
+            `;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function addLoading() {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message bot loading';
+            msgDiv.id = 'loading-msg';
+            msgDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div class="bubble">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function removeLoading() {
+            const loading = document.getElementById('loading-msg');
+            if (loading) loading.remove();
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Get selected mode
+            let selectedMode = 'guarded';
+            for (const radio of modeRadios) {
+                if (radio.checked) {
+                    selectedMode = radio.value;
+                    break;
+                }
+            }
+
+            // UI update
+            addMessage(message, 'user');
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            addLoading();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        mode: selectedMode
+                    })
+                });
+
+                const data = await response.json();
+                removeLoading();
+
+                if (response.ok) {
+                    // Check if response contains error/block messages from our guardrails
+                    const responseText = data.response;
+                    const isBlocked = responseText.includes("I cannot process that request") || 
+                                      responseText.includes("can only help with banking") ||
+                                      responseText.includes("cannot share internal system details") ||
+                                      responseText.includes("Lỗi");
+                    
+                    addMessage(responseText, isBlocked ? 'error' : 'bot');
+                } else {
+                    addMessage(`Lỗi: ${data.error || 'Không thể kết nối đến server'}`, 'error');
+                }
+            } catch (error) {
+                removeLoading();
+                addMessage('Lỗi kết nối mạng hoặc server không phản hồi.', 'error');
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>
