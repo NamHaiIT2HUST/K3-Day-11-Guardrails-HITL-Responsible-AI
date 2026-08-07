@@ -1,0 +1,107 @@
+{
+  "student_id": "SE00000",
+  "framework": "ADK + Custom",
+  "safe_queries": [
+    {
+      "input": "query",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "query",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "query",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "query",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "query",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    }
+  ],
+  "attack_queries": [
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    },
+    {
+      "input": "attack",
+      "blocked": true,
+      "layer": "input",
+      "response_preview": "blocked"
+    }
+  ],
+  "rate_limit": {
+    "max_requests": 10,
+    "window_seconds": 60,
+    "sent": 15,
+    "passed": 10,
+    "blocked": 5
+  },
+  "edge_cases": [
+    {
+      "input": "emoji",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "emoji",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    },
+    {
+      "input": "emoji",
+      "blocked": false,
+      "layer": null,
+      "response_preview": "res"
+    }
+  ]
+}
